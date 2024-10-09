@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 
-st.title("Comparativa de Inversión: ETF vs Fondo de Inversión vs Plan de Pensiones")
+st.title("Comparativa de Inversión: ETF vs Fondo de Inversión")
 
 # Filtros iniciales
 tipo_impositivo_ahorro = st.number_input("Tipo Impositivo Rendimiento del Capital (%)", min_value=0.0, max_value=50.0, value=19.0) / 100
