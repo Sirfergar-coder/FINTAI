@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # Añadir imagen de cabecera
-st.image('images/fintai.jpg', use_column_width=True)
+st.image('https://github.com/Sirfergar-coder/FINTAI/blob/master/comparativa_inversiones/images/fintai.jpg', use_column_width=True)
 
 # Enlace a la web
 st.markdown("Producto creado por FINTAI (https://www.fintai.es)")
