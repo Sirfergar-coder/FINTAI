@@ -48,7 +48,7 @@ with col1:
 with col2:
     coste_etf_gestion = st.number_input("Coste Gestión ETF (%)", min_value=0.0, max_value=5.0, value=0.2) / 100
 with col3:
-    tipo_coste_etf_transaccion = st.selectbox("Tipo de Coste Compraventa ETF", ["Porcentaje", "Fijo"], index=0)
+    tipo_coste_etf_transaccion = st.selectbox("Tipo de Coste Compraventa", ["Porcentaje", "Fijo"], index=0)
 with col4:
     if tipo_coste_etf_transaccion == "Porcentaje":
         coste_etf_transaccion = st.number_input("Coste Compraventa ETF (%)", min_value=0.0, max_value=5.0, value=0.1) / 100
