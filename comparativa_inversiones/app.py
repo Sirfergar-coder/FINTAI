@@ -4,8 +4,28 @@ import matplotlib.pyplot as plt
 
 st.title("Comparativa de Inversión: ETF vs Fondo de Inversión")
 
+# Explicación de comisiones sobre rendimientos del capital en España
+with st.expander("Impuestos sobre los rendimientos del capital en España", expanded=False):
+    st.markdown("""
+    - **19%** para ganancias de hasta **6.000 euros**.
+    - **21%** para ganancias entre **6.000 y 50.000 euros**.
+    - **23%** para ganancias entre **50.000 y 200.000 euros**.
+    - **27%** para ganancias superiores a **200.000 euros**.
+ """)
+
 # Filtros iniciales
-tipo_impositivo_ahorro = st.number_input("Tipo Impositivo Rendimiento del Capital (%)", min_value=0.0, max_value=50.0, value=19.0) / 100
+# Tipo impositivo en función de las ganancias
+
+def calcular_tipo_impositivo(ganancia):
+    if ganancia <= 6000:
+        return 0.19
+    elif ganancia <= 50000:
+        return 0.21
+    elif ganancia <= 200000:
+        return 0.23
+    else:
+        return 0.27
+
 col1, col2 = st.columns(2)
 with col1:
     tiempo_inversion = st.number_input("Horizonte Temporal (años)", min_value=1, max_value=50, value=20)
@@ -46,7 +66,7 @@ with col2:
     coste_fondo_gestion = st.number_input("Coste Gestión Fondo de Inversión (%)", min_value=0.0, max_value=5.0, value=1.5) / 100
 
 # Función para calcular el rendimiento con costes de transacción y ahorro fiscal
-def calcular_rendimiento(inversion_inicial, tiempo, rentabilidad, coste_gestion, coste_transaccion, ventas, tipo_impositivo, tipo_coste):
+def calcular_rendimiento(inversion_inicial, tiempo, rentabilidad, coste_gestion, coste_transaccion, ventas, tipo_coste):
     valor_inicial = inversion_inicial
     inversion = inversion_inicial
     coste_total_gestion = 0
@@ -69,6 +89,7 @@ def calcular_rendimiento(inversion_inicial, tiempo, rentabilidad, coste_gestion,
 
             # Calcular impuestos por las ventas realizadas
             ganancia_venta = inversion - valor_inicial
+            tipo_impositivo = calcular_tipo_impositivo(ganancia_venta)
             impuestos_venta = max(ganancia_venta, 0) * tipo_impositivo
             inversion -= impuestos_venta
             impuestos_totales += impuestos_venta
@@ -83,7 +104,8 @@ def calcular_rendimiento(inversion_inicial, tiempo, rentabilidad, coste_gestion,
         valores.append(inversion)
       
     ganancias_finales = valores[-1] - valor_inicial
-    impuestos_finales = max(ganancias_finales, 0) * tipo_impositivo
+    tipo_impositivo_finales = calcular_tipo_impositivo(ganancias_finales)
+    impuestos_finales = max(ganancias_finales, 0) * tipo_impositivo_finales
     resultado_final =  valores[-1] - impuestos_finales
     ganancia_neta = resultado_final - valor_inicial
 
@@ -97,7 +119,6 @@ valores_etf, coste_total_etf, impuestos_ventas_etf, costes_transaccion_etf, impu
     coste_etf_gestion,
     coste_etf_transaccion,
     df_ventas["Ventas"].tolist(),
-    tipo_impositivo_ahorro,
     tipo_coste_etf_transaccion
 )
 impuestos_totales_etf = impuestos_ventas_etf + impuestos_finales_etf
@@ -110,7 +131,7 @@ valores_fondo, coste_total_fondo, impuestos_ventas_fondo, _, impuestos_fondo_anu
     coste_fondo_gestion,
     0,  # Fondo de inversión no tiene coste de transacción por defecto
     [0] * tiempo_inversion,
-    tipo_impositivo_ahorro,
+    
     "Fijo"
 )
 
@@ -141,7 +162,6 @@ with col2:
     st.write(f"Impuestos Totales: {impuestos_totales_fondo:,.2f} €")
     st.write(f"**Valor Neto Final: {resultado_final_fondo:,.2f} €**")
 
-# Gráfico
 st.header("Evolución de la Inversión")
 
 df = pd.DataFrame({
@@ -165,7 +185,7 @@ fig.add_scatter(x=[tiempo_inversion], y=[resultado_final_fondo], mode='markers+t
 st.plotly_chart(fig)
 
 # Tabla con valores de la cartera cada año, costes de transacción y los impuestos en la compraventa
-st.header("Comparativa anual de valores de la Cartera")
+st.header("Tabla de Valores de la Cartera por Año, Costes de Transacción y Impuestos de Compraventa (ETF)")
 
 df_valores_cartera_etf = pd.DataFrame({
     'Años': range(0, tiempo_inversion + 1),
