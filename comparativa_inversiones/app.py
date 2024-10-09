@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 
-st.title("Comparativa de Inversión: ETF vs Fondo de Inversión")
+st.title("Comparativa de Inversión: ETF vs Fondo de Inversión vs Plan de Pensiones")
 
 # Filtros iniciales
 tipo_impositivo_ahorro = st.number_input("Tipo Impositivo Rendimiento del Capital (%)", min_value=0.0, max_value=50.0, value=19.0) / 100
@@ -49,6 +49,7 @@ with col2:
 def calcular_rendimiento(inversion_inicial, tiempo, rentabilidad, coste_gestion, coste_transaccion, ventas, tipo_impositivo, tipo_coste):
     valor_inicial = inversion_inicial
     inversion = inversion_inicial
+    coste_total_gestion = 0
     coste_total_transaccion = 0
     impuestos_totales = 0
 
@@ -75,13 +76,21 @@ def calcular_rendimiento(inversion_inicial, tiempo, rentabilidad, coste_gestion,
             impuestos_anuales[año] = impuestos_venta
 
         # Calcular el rendimiento después de aplicar el coste de gestión
-        inversion *= (1 + rentabilidad - coste_gestion)
+        coste_gestion_anual = inversion * coste_gestion
+        coste_total_gestion += coste_gestion_anual
+        inversion *= (1 + rentabilidad)
+        inversion -= coste_gestion_anual
         valores.append(inversion)
+      
+    ganancias_finales = valores[-1] - valor_inicial
+    impuestos_finales = max(ganancias_finales, 0) * tipo_impositivo
+    resultado_final =  valores[-1] - impuestos_finales
+    ganancia_neta = resultado_final - valor_inicial
 
-    return valores, coste_total_transaccion, impuestos_totales, costes_transaccion_anuales, impuestos_anuales
+    return valores, coste_total_transaccion, impuestos_totales, costes_transaccion_anuales, impuestos_anuales, coste_total_gestion, ganancias_finales, impuestos_finales, resultado_final, ganancia_neta
 
 # Cálculos para ETF
-valores_etf, coste_total_etf, impuestos_totales_etf, costes_transaccion_etf, impuestos_etf_anuales = calcular_rendimiento(
+valores_etf, coste_total_etf, impuestos_ventas_etf, costes_transaccion_etf, impuestos_etf_anuales, coste_total_gestion_etf, ganancias_finales_etf, impuestos_finales_etf, resultado_final_etf, ganancia_neta_etf = calcular_rendimiento(
     inversion_inicial,
     tiempo_inversion,
     rendimiento_etf,
@@ -91,12 +100,10 @@ valores_etf, coste_total_etf, impuestos_totales_etf, costes_transaccion_etf, imp
     tipo_impositivo_ahorro,
     tipo_coste_etf_transaccion
 )
-ganancia_etf = valores_etf[-1] - inversion_inicial - coste_total_etf - impuestos_totales_etf
-impuestos_etf = ganancia_etf * tipo_impositivo_ahorro
-valor_neto_etf = valores_etf[-1] - impuestos_etf
+impuestos_totales_etf = impuestos_ventas_etf + impuestos_finales_etf
 
 # Cálculos para Fondo de Inversión
-valores_fondo, coste_total_fondo, _, _, impuestos_fondo_anuales = calcular_rendimiento(
+valores_fondo, coste_total_fondo, impuestos_ventas_fondo, _, impuestos_fondo_anuales, coste_total_gestion_fondo, ganancias_finales_fondo, impuestos_finales_fondo, resultado_final_fondo, ganancia_neta_fondo = calcular_rendimiento(
     inversion_inicial,
     tiempo_inversion,
     rendimiento_fondo,
@@ -106,9 +113,8 @@ valores_fondo, coste_total_fondo, _, _, impuestos_fondo_anuales = calcular_rendi
     tipo_impositivo_ahorro,
     "Fijo"
 )
-ganancia_fondo = valores_fondo[-1] - inversion_inicial - coste_total_fondo
-impuestos_fondo = ganancia_fondo * tipo_impositivo_ahorro
-valor_neto_fondo = valores_fondo[-1] - impuestos_fondo
+
+impuestos_totales_fondo = impuestos_ventas_fondo + impuestos_finales_fondo
 
 # Resultados
 st.header("Resultados Finales")
@@ -118,17 +124,22 @@ col1, col2 = st.columns(2)
 with col1:
     st.subheader("ETF")
     st.write(f"Valor Bruto Final: {valores_etf[-1]:,.2f} €")
+    st.write(f"Coste Total de Gestión: {coste_total_gestion_etf:,.2f} €")
     st.write(f"Coste Total de Transacción: {coste_total_etf:,.2f} €")
-    st.write(f"Impuestos Totales por Ventas: {impuestos_totales_etf:,.2f} €")
-    st.write(f"Impuestos Finales: {impuestos_etf:,.2f} €")
-    st.write(f"**Valor Neto Final: {valor_neto_etf:,.2f} €**")
+    st.write(f"Impuestos pagados en las Ventas: {impuestos_ventas_etf:,.2f} €")
+    st.write(f"Impuestos último día: {impuestos_finales_etf:,.2f} €")
+    st.write(f"Impuestos Totales: {impuestos_totales_etf:,.2f} €")
+    st.write(f"**Valor Neto Final: {resultado_final_etf:,.2f} €**")
 
 with col2:
     st.subheader("Fondo de Inversión")
     st.write(f"Valor Bruto Final: {valores_fondo[-1]:,.2f} €")
+    st.write(f"Coste Total de Gestión: {coste_total_gestion_fondo:,.2f} €")
     st.write(f"Coste Total de Transacción: {coste_total_fondo:,.2f} €")
-    st.write(f"Impuestos: {impuestos_fondo:,.2f} €")
-    st.write(f"**Valor Neto Final: {valor_neto_fondo:,.2f} €**")
+    st.write(f"Impuestos pagados en las Ventas: {impuestos_ventas_fondo:,.2f} €")
+    st.write(f"Impuestos último día: {impuestos_finales_fondo:,.2f} €")
+    st.write(f"Impuestos Totales: {impuestos_totales_fondo:,.2f} €")
+    st.write(f"**Valor Neto Final: {resultado_final_fondo:,.2f} €**")
 
 # Gráfico
 st.header("Evolución de la Inversión")
@@ -146,8 +157,9 @@ df = pd.DataFrame({
 import plotly.express as px
 fig = px.line(df.reset_index(), x='Años', y=['ETF', 'Fondo de Inversión'], labels={'value': 'Valor (€)', 'Años': 'Años', 'variable': 'Tipo de Inversión'}, title='Evolución de la Inversión', color_discrete_map={'ETF': '#1f77b4', 'Fondo de Inversión': '#ff7f0e'})
 fig.update_traces(line=dict(width=2))
-st.plotly_chart(fig)
 
-# Tabla con valores de la cartera cada año y la diferencia
-st.header("Valores de la Cartera por Año")
-st.dataframe(df[['Fondo de Inversión', 'ETF', 'Comisiones ETF', 'Impuestos ETF', 'Diferencia (ETF - Fondo)']].style.format('{:.2f}'))
+# Añadir el valor neto final como último punto en el gráfico
+fig.add_scatter(x=[tiempo_inversion], y=[resultado_final_etf], mode='markers+text', name='Valor Neto ETF', text=[f'{resultado_final_etf:,.2f} €'], textposition='top center', marker=dict(color='#1f77b4', size=10))
+fig.add_scatter(x=[tiempo_inversion], y=[resultado_final_fondo], mode='markers+text', name='Valor Neto Fondo', text=[f'{resultado_final_fondo:,.2f} €'], textposition='top center', marker=dict(color='#ff7f0e', size=10))
+
+st.plotly_chart(fig)
