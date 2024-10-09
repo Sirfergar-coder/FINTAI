@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 
-st.title("Comparativa de Inversión: ETF vs Fondo de Inversión vs Plan de Pensiones")
+st.title("Comparativa de Inversión: ETF vs Fondo de Inversión")
 
 # Filtros iniciales
 tipo_impositivo_ahorro = st.number_input("Tipo Impositivo Rendimiento del Capital (%)", min_value=0.0, max_value=50.0, value=19.0) / 100
@@ -165,7 +165,7 @@ fig.add_scatter(x=[tiempo_inversion], y=[resultado_final_fondo], mode='markers+t
 st.plotly_chart(fig)
 
 # Tabla con valores de la cartera cada año, costes de transacción y los impuestos en la compraventa
-st.header("Tabla de Valores de la Cartera por Año, Costes de Transacción y Impuestos de Compraventa (ETF)")
+st.header("Comparativa anual de valores de la Cartera")
 
 df_valores_cartera_etf = pd.DataFrame({
     'Años': range(0, tiempo_inversion + 1),
