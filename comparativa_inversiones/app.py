@@ -11,20 +11,24 @@ with st.expander("Impuestos sobre los rendimientos del capital en España", expa
     - **21%** para ganancias entre **6.000 y 50.000 euros**.
     - **23%** para ganancias entre **50.000 y 200.000 euros**.
     - **27%** para ganancias superiores a **200.000 euros**.
- """)
+""")
 
 # Filtros iniciales
 # Tipo impositivo en función de las ganancias
 
 def calcular_tipo_impositivo(ganancia):
-    if ganancia <= 6000:
-        return 0.19
-    elif ganancia <= 50000:
-        return 0.21
-    elif ganancia <= 200000:
-        return 0.23
-    else:
-        return 0.27
+    impuesto = 0
+    if ganancia > 200000:
+        impuesto += (ganancia - 200000) * 0.27
+        ganancia = 200000
+    if ganancia > 50000:
+        impuesto += (ganancia - 50000) * 0.23
+        ganancia = 50000
+    if ganancia > 6000:
+        impuesto += (ganancia - 6000) * 0.21
+        ganancia = 6000
+    impuesto += ganancia * 0.19
+    return impuesto
 
 col1, col2 = st.columns(2)
 with col1:
@@ -89,8 +93,8 @@ def calcular_rendimiento(inversion_inicial, tiempo, rentabilidad, coste_gestion,
 
             # Calcular impuestos por las ventas realizadas
             ganancia_venta = inversion - valor_inicial
-            tipo_impositivo = calcular_tipo_impositivo(ganancia_venta)
-            impuestos_venta = max(ganancia_venta, 0) * tipo_impositivo
+            impuestos_venta = calcular_tipo_impositivo(ganancia_venta)
+            
             inversion -= impuestos_venta
             impuestos_totales += impuestos_venta
             valor_inicial = inversion
@@ -104,8 +108,8 @@ def calcular_rendimiento(inversion_inicial, tiempo, rentabilidad, coste_gestion,
         valores.append(inversion)
       
     ganancias_finales = valores[-1] - valor_inicial
-    tipo_impositivo_finales = calcular_tipo_impositivo(ganancias_finales)
-    impuestos_finales = max(ganancias_finales, 0) * tipo_impositivo_finales
+    impuestos_finales = calcular_tipo_impositivo(ganancias_finales)
+    
     resultado_final =  valores[-1] - impuestos_finales
     ganancia_neta = resultado_final - valor_inicial
 
@@ -162,6 +166,7 @@ with col2:
     st.write(f"Impuestos Totales: {impuestos_totales_fondo:,.2f} €")
     st.write(f"**Valor Neto Final: {resultado_final_fondo:,.2f} €**")
 
+# Gráfico
 st.header("Evolución de la Inversión")
 
 df = pd.DataFrame({
