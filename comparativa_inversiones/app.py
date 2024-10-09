@@ -2,7 +2,20 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 
-st.title("Comparativa de Inversión: ETF vs Fondo de Inversión")
+# Añadir imagen de cabecera
+st.image('images/fintai.jpg', use_column_width=True)
+
+# Enlace a la web
+st.markdown("Producto creado por FINTAI (https://www.fintai.es)")
+
+# Explicación de comisiones sobre rendimientos del capital en España
+with st.expander("Impuestos sobre los rendimientos del capital en España", expanded=False):
+    st.markdown("""
+    - **19%** para ganancias de hasta **6.000 euros**.
+    - **21%** para ganancias entre **6.000 y 50.000 euros**.
+    - **23%** para ganancias entre **50.000 y 200.000 euros**.
+    - **27%** para ganancias superiores a **200.000 euros**.
+""")
 
 # Explicación de comisiones sobre rendimientos del capital en España
 with st.expander("Impuestos sobre los rendimientos del capital en España", expanded=False):
@@ -202,3 +215,6 @@ df_valores_cartera_etf = pd.DataFrame({
 }).set_index('Años')
 
 st.dataframe(df_valores_cartera_etf.style.format("{:.2f}"))
+
+# Enlace a la web
+st.markdown("Producto creado por FINTAI (https://www.fintai.es)")
