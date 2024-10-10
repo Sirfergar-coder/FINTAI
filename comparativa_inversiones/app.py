@@ -100,17 +100,16 @@ def calcular_rendimiento(inversion_inicial, tiempo, rentabilidad, coste_gestion,
     valores = [inversion]
     costes_transaccion_anuales = [0] * (tiempo + 1)
     impuestos_anuales = [0] * (tiempo + 1)
+    
     for año in range(1, tiempo + 1):
+        # Calcular el rendimiento después de aplicar el coste de gestión
+        coste_gestion_anual = inversion * coste_gestion
+        coste_total_gestion += coste_gestion_anual
+        inversion *= (1 + rentabilidad)
+        inversion -= coste_gestion_anual
+
         # Aplicar los costes de compraventa si hubo ventas en ese año
         if ventas[año - 1] > 0:
-            if tipo_coste == "Porcentaje":
-                coste_traspaso = inversion * coste_transaccion * ventas[año - 1]
-            else:
-                coste_traspaso = coste_transaccion * ventas[año - 1]
-            inversion -= coste_traspaso
-            coste_total_transaccion += coste_traspaso
-            costes_transaccion_anuales[año] = coste_traspaso
-
             # Calcular impuestos por las ventas realizadas
             ganancia_venta = inversion - valor_inicial
 
@@ -122,14 +121,17 @@ def calcular_rendimiento(inversion_inicial, tiempo, rentabilidad, coste_gestion,
                 inversion -= impuestos_venta
                 impuestos_totales += impuestos_venta
 
+            if tipo_coste == "Porcentaje":
+                coste_traspaso = inversion * coste_transaccion * ventas[año - 1]
+            else:
+                coste_traspaso = coste_transaccion * ventas[año - 1]
+            inversion -= coste_traspaso
+            coste_total_transaccion += coste_traspaso
+            costes_transaccion_anuales[año] = coste_traspaso
+
             valor_inicial = inversion
             impuestos_anuales[año] = impuestos_venta
 
-        # Calcular el rendimiento después de aplicar el coste de gestión
-        coste_gestion_anual = inversion * coste_gestion
-        coste_total_gestion += coste_gestion_anual
-        inversion *= (1 + rentabilidad)
-        inversion -= coste_gestion_anual
         valores.append(inversion)
 
     ganancias_finales = valores[-1] - valor_inicial
