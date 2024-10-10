@@ -104,8 +104,7 @@ def calcular_rendimiento(inversion_inicial, tiempo, rentabilidad, coste_gestion,
         # Aplicar los costes de compraventa si hubo ventas en ese año
         if ventas[año - 1] > 0:
             if tipo_coste == "Porcentaje":
-                coste_traspaso = inversion * \
-                    coste_transaccion * ventas[año - 1]
+                coste_traspaso = inversion * coste_transaccion * ventas[año - 1]
             else:
                 coste_traspaso = coste_transaccion * ventas[año - 1]
             inversion -= coste_traspaso
